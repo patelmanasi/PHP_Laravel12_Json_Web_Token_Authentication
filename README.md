@@ -819,4 +819,7 @@ Set Accept: application/json to ensure JSON responses.
 ---
 
 Your PHP_Laravel12_Json_Web_Token_Authentication Project is Now Ready!
+<<<<<<< HEAD
 
+=======
+>>>>>>> origin/main
