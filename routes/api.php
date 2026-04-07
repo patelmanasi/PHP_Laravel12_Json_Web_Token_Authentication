@@ -3,54 +3,39 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\UserController;
 
 /*
 |--------------------------------------------------------------------------
 | API Authentication Routes
 |--------------------------------------------------------------------------
-| These routes handle user authentication using JWT.
-| All routes are prefixed with /auth
-| The "api" middleware enables JSON-based API handling
+| JWT-based authentication routes
 */
+
+// Public routes (no auth required)
 Route::group([
     'middleware' => 'api',
     'prefix' => 'auth'
 ], function ($router) {
 
-    /*
-    |--------------------------------------------------------------------------
-    | Public Routes
-    |--------------------------------------------------------------------------
-    | These routes do NOT require authentication
-    */
-
-    // Register a new user
     Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+    Route::post('/forgot-password', [AuthController::class, 'forgotPassword']);
 
-    // Login user and generate JWT token
-    Route::post('/login',    [AuthController::class, 'login']);
+    // Protected routes (require JWT)
+    Route::middleware('auth:api')->group(function () {
 
-    /*
-    |--------------------------------------------------------------------------
-    | Protected Routes
-    |--------------------------------------------------------------------------
-    | These routes require a valid JWT token
-    | auth:api middleware validates the token
-    */
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::post('/refresh', [AuthController::class, 'refresh']);
+        Route::get('/profile', [AuthController::class, 'profile']);
+        Route::put('/profile', [AuthController::class, 'updateProfile']);
+        Route::put('/change-password', [AuthController::class, 'changePassword']);
 
-    // Logout user and invalidate JWT token
-    Route::post('/logout',   [AuthController::class, 'logout'])
-        ->middleware('auth:api');
-
-    // Refresh JWT token
-    Route::post('/refresh',  [AuthController::class, 'refresh'])
-        ->middleware('auth:api');
-
-    // Get authenticated user profile
-    Route::post('/profile',  [AuthController::class, 'profile'])
-        ->middleware('auth:api');
+        // Example: admin-only route
+        Route::get('/all-users', [UserController::class, 'index'])
+            ->middleware('role:admin');
+    });
 });
-
 
 Route::get('/user', function (Request $request) {
     return $request->user();
